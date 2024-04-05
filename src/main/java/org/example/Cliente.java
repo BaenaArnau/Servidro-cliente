@@ -41,6 +41,16 @@ public class Cliente {
             System.out.println("Sent client public key to server: " + keyPair.getPublic());
         }
 
+        // Receive server's public key
+        DatagramPacket serverPublicKeyPacket = new DatagramPacket(receivedData, receivedData.length);
+        socket.receive(serverPublicKeyPacket);
+
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(serverPublicKeyPacket.getData());
+        ObjectInputStream objectStream = new ObjectInputStream(byteStream);
+        serverPublicKey = (PublicKey) objectStream.readObject();
+
+        System.out.println("Received server public key: " + serverPublicKey);
+
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
