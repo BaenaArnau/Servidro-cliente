@@ -3,7 +3,6 @@ package org.example;
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.util.Arrays;
 
 public class Servidor {
     private DatagramSocket socket;
@@ -39,6 +38,8 @@ public class Servidor {
         DatagramPacket serverPublicKeyPacket = new DatagramPacket(publicKeyBytes, publicKeyBytes.length,
                 publicKeyPacket.getAddress(), publicKeyPacket.getPort());
         socket.send(serverPublicKeyPacket);
+
+
 
         // Receive and process messages from client
         while (true) {
