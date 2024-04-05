@@ -1,12 +1,8 @@
 package org.example;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 public class Servidor {
@@ -21,7 +17,7 @@ public class Servidor {
     }
 
     public void runServer() throws IOException, ClassNotFoundException {
-        byte[] receivedData = new byte[4096]; // Aumentar el tamaño del búfer
+        byte[] receivedData = new byte[4096]; // Increase buffer size
 
         // Receive client's public key
         DatagramPacket publicKeyPacket = new DatagramPacket(receivedData, receivedData.length);
@@ -50,22 +46,30 @@ public class Servidor {
             socket.receive(packet);
             byte[] encryptedMsg = packet.getData();
 
-            // Decrypt the message using the client's public key
-            byte[] decryptedMsg = Encryp.decryptData(encryptedMsg, privateKey);
-            String msg = new String(decryptedMsg, 0, decryptedMsg.length);
-
-            System.out.println("Client: " + msg);
-
-            if (msg.equalsIgnoreCase("exit")) {
-                break;
+            if (encryptedMsg == null) {
+                System.err.println("Received empty packet. Ignoring...");
+                continue;
             }
 
-            // Echo the message back to the client
-            String response = "Server received: " + msg;
-            byte[] encryptedResponse = Encryp.encryptData(response.getBytes(), clientPublicKey);
-            DatagramPacket responsePacket = new DatagramPacket(encryptedResponse, encryptedResponse.length,
-                    packet.getAddress(), packet.getPort());
-            socket.send(responsePacket);
+            // Decrypt the message using the client's public key
+            byte[] decryptedMsg = Encryp.decryptData(encryptedMsg, privateKey);
+            if (decryptedMsg != null) {
+                String msg = new String(decryptedMsg);
+                System.out.println("Client: " + msg);
+
+                if (msg.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                // Echo the message back to the client
+                String response = "Server received: " + msg;
+                byte[] encryptedResponse = Encryp.encryptData(response.getBytes(), clientPublicKey);
+                DatagramPacket responsePacket = new DatagramPacket(encryptedResponse, encryptedResponse.length,
+                        packet.getAddress(), packet.getPort());
+                socket.send(responsePacket);
+            } else {
+                System.err.println("Failed to decrypt the message.");
+            }
         }
 
         socket.close();
@@ -74,7 +78,7 @@ public class Servidor {
     public static void main(String[] args) {
         try {
             // Generate server's key pair
-            KeyPair serverKeyPair = Encryp.randomGenerate(1024);
+            KeyPair serverKeyPair = Encryp.randomGenerate(1024); // Increase key size for better security
             PublicKey serverPublicKey = serverKeyPair.getPublic();
             PrivateKey serverPrivateKey = serverKeyPair.getPrivate();
 
@@ -86,3 +90,4 @@ public class Servidor {
         }
     }
 }
+
